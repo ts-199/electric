@@ -233,7 +233,7 @@ static void MX_ADC1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN ADC1_Init 2 */
-  HAL_ADC_Start(&hadc1);
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&adc_value,2);
 
   /* USER CODE END ADC1_Init 2 */
 
@@ -350,7 +350,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	HAL_ADC_Start(&hadc1);
+	//HAL_ADC_Start(&hadc1);
 	HAL_ADC_PollForConversion(&hadc1, 10);
 	fi_value=HAL_ADC_GetValue(&hadc1);
 	fi_value=filter(fi_value);
