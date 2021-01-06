@@ -38,7 +38,7 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
-extern float  adc_value;
+extern float  adc_value[2];
 extern int pulse;
 extern float fi_value;
 /* USER CODE END ET */
