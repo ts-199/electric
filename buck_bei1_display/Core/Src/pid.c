@@ -20,7 +20,7 @@ void pid_init(float kp,float ki,float kd,float set)
 void pid_cal(float value)
 {
   value=((float)value/(float)4096*(float)3.3+0.0005)/0.0206;
-	U_out=value;
+	//U_out=value;
 	pid.ek2=pid.set-value;
 	pid.out=(pid.kp+pid.ki+pid.kd)*pid.ek2-(2*pid.kd+pid.kp)*pid.ek1+pid.kd*pid.ek0;
 	pid.ek1=pid.ek2;

@@ -38,7 +38,7 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
-extern float  adc_value[2];
+extern  uint16_t  adc_value[2];
 extern int pulse;
 extern float fi_value;
 /* USER CODE END ET */
@@ -59,7 +59,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-float filter(int value);
+float filter(uint32_t value);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

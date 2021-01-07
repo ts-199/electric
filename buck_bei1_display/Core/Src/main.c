@@ -16,6 +16,7 @@
   *
   ******************************************************************************
   */
+	/*PA1 电压 PA2电流   橙色连PA1*/
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -34,6 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define RHEOSTAT_ADC_DR_ADDR                ((uint32_t)ADC1+0x4c)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -66,7 +68,7 @@ static void MX_TIM1_Init(void);
 ADC_HandleTypeDef hadc1;
 TIM_HandleTypeDef htim1;
 float fi_value;
-float  adc_value[2];
+uint16_t  adc_value[2];
 int  pulse;
 extern struct pid_var pid;
 int value_array[100]={0};
@@ -75,6 +77,7 @@ unsigned char am=1;
 float sum=0;
 unsigned char show[14];
 float U_out=0;
+float I_out=0;
 /* USER CODE END 0 */
 
 /**
@@ -109,6 +112,7 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&adc_value,2);
 	pid_init(20,3,0,16);
 	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000000);     //HAL_Delay()  us级
 	IIC_Init();
@@ -125,10 +129,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+		U_out=adc_value[0]*3.3/4096;
     sprintf((char*)show, "U_out = %.4f ",(U_out));
     OLED_P6x8Str(5,0,show);
-
-		
+		I_out=adc_value[1]*3.3/4096;
+    sprintf((char*)show, "I_out = %.4f ",(I_out));
+    OLED_P6x8Str(5,1,show);
+		//__HAL_TIM_SetCompare(&htim1, TIM_CHANNEL_1,1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -233,7 +240,7 @@ static void MX_ADC1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN ADC1_Init 2 */
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&adc_value,2);
+  //HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&adc_value,2);
 
   /* USER CODE END ADC1_Init 2 */
 
@@ -328,8 +335,8 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA2_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+  //HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
+  //HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
 
 }
 
@@ -351,16 +358,18 @@ static void MX_GPIO_Init(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	//HAL_ADC_Start(&hadc1);
-	HAL_ADC_PollForConversion(&hadc1, 10);
-	fi_value=HAL_ADC_GetValue(&hadc1);
-	fi_value=filter(fi_value);
+	//HAL_ADC_PollForConversion(&hadc1, 10);
+	//fi_value=HAL_ADC_GetValue(&hadc1);
+	//HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&adc_value,2);
+	//HAL_Delay(4);
+	fi_value=filter(adc_value[0]);
 	pid_cal(fi_value);
 	pulse+=(int)pid.out;
 	if(pulse>=pid.max) pulse=pid.max;
 	else if(pulse<=pid.min) pulse=pid.min;
 	__HAL_TIM_SetCompare(&htim1, TIM_CHANNEL_1,pulse);
 }
-float filter(int value)
+float filter( uint32_t value)
 {
 	if(count<=99&&am)
 	{
